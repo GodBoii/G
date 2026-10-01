@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), var(--font-inter), sans-serif;
+}
+
+@theme {
+  --color-bg-950: #07051a;  --color-bg-900: #0d0a24;  --color-bg-800: #161036;  --color-bg-700: #211a4a;
+  --color-ink: #f5f3ff;     --color-ink-muted: #c4bfdc;  --color-ink-faint: #9690b5;
+  --radius-card: 1.25rem;
+  --shadow-glow-fuchsia: 0 0 24px -4px rgb(217 70 239 / .55);
+  --shadow-glow-emerald: 0 0 28px -2px rgb(52 211 153 / .65);
+  --shadow-glow-amber: 0 0 28px -2px rgb(251 191 36 / .6);
+  --animate-win-glow: win-glow 900ms ease-in-out 3;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shake: shake 400ms ease-in-out;
+  --animate-bucket-pop: bucket-pop 500ms ease-out;
+  /* Additions (same keyframe set as §7) so games can use animate-* utilities. */
+  --animate-shimmer: shimmer 1.6s ease-in-out 2;
+  --animate-bulb-blink: bulb-blink 1.2s steps(2, jump-none) infinite;
+  --animate-coin-toss: coin-toss 900ms cubic-bezier(.33, 0, .2, 1);
+}
+
+@utility glass {
+  background: rgb(255 255 255 / .05);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / .10);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 32px -12px rgb(0 0 0 / .7), inset 0 1px 0 rgb(255 255 255 / .06);
+}
+
+@keyframes win-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(52 211 153 / 0); }
+  50% { box-shadow: 0 0 28px -2px rgb(52 211 153 / .65); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(4deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes bucket-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.18) translateY(3px); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+@keyframes bulb-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+@keyframes coin-toss {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -48px; }
+}
+
+/* Coin Flip: the ground shadow shrinks while the coin is in the air (paired with coin-toss). */
+@keyframes coin-shadow {
+  0%, 100% { transform: scale(1); opacity: .55; }
+  50% { transform: scale(.55); opacity: .25; }
+}
+
+/* Mines: a revealed tile flips in (250 ms). */
+@keyframes tile-flip {
+  0% { transform: perspective(400px) rotateY(90deg) scale(.85); opacity: .4; }
+  100% { transform: perspective(400px) rotateY(0deg) scale(1); opacity: 1; }
+}
+
+@layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber-300);
+    outline-offset: 2px;
+  }
+
+  summary {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Faint 32px grid for the fixed background layer, faded out with a mask. */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / .04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / .04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
+  }
+
+  /* Static rule text inside GamePageShell's <details>. Pages render plain h3/p/ul/table. */
+  .rules h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-ink);
+    font-size: 1rem;
+    margin-top: 1.25rem;
+  }
+  .rules h3:first-child {
+    margin-top: 0;
+  }
+  .rules p,
+  .rules ul,
+  .rules ol {
+    margin-top: .5rem;
+  }
+  .rules ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .rules ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+  .rules li + li {
+    margin-top: .25rem;
+  }
+  .rules table {
+    margin-top: .75rem;
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .rules th,
+  .rules td {
+    border-bottom: 1px solid rgb(255 255 255 / .08);
+    padding: .375rem .5rem;
+    text-align: left;
+  }
+  .rules th {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .rules strong {
+    color: var(--color-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-bulb-blink,
+  .animate-shimmer,
+  .animate-coin-toss {
+    animation: none !important;
+  }
+
+  .animate-win-glow {
+    animation-iteration-count: 1 !important;
+  }
+}
