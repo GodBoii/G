@@ -11,7 +11,7 @@ export default function Home() {
           <h2 id="games-heading" className="font-display text-2xl font-bold text-ink sm:text-3xl">
             All games
           </h2>
-          <p className="text-sm text-ink-faint">10 tables · demo credits only</p>
+          <p className="text-sm text-ink-faint">{GAMES.length} tables · demo credits only</p>
         </div>
         <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {GAMES.map((game) => (
