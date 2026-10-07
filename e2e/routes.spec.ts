@@ -2,7 +2,7 @@ import path from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
 import { GAMES } from "../src/lib/games";
 
-const HOME_H1 = "Play 10 arcade games with free demo credits";
+const HOME_H1 = `Play ${GAMES.length} arcade games with free demo credits`;
 const FOOTER_TEXT = "Demo credits only. For entertainment. No real money.";
 const SCREENSHOT_DIR = path.join(__dirname, "..", ".agents", "tasks", "gamess-site", "screenshots");
 
@@ -76,7 +76,7 @@ test.describe("browser pass", () => {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(route.h1);
       await expect(page.locator("footer")).toContainText(FOOTER_TEXT);
 
-      // Navbar links to all 10 games (pill row on desktop, #mobile-nav grid on mobile).
+      // Navbar links to all registered games (pill row on desktop, #mobile-nav grid on mobile).
       const navScope = testInfo.project.name === "mobile" ? "#mobile-nav" : 'header nav[aria-label="Games"]';
       for (const g of GAMES) {
         await expect(page.locator(`${navScope} a[href="${g.href}"]`)).toHaveCount(1);
@@ -107,14 +107,15 @@ test.describe("browser pass", () => {
 });
 
 test.describe("home", () => {
-  test("lists 10 game cards with correct links and 5 Instant Win tags", async ({ page }) => {
+  test("lists all registered game cards with correct links and category tags", async ({ page }) => {
     await page.goto("/");
     await waitForHydration(page);
     const cards = page.getByTestId("game-card");
-    await expect(cards).toHaveCount(10);
+    await expect(cards).toHaveCount(GAMES.length);
     const hrefs = await cards.evaluateAll((els) => els.map((el) => el.getAttribute("href")));
     expect(hrefs).toEqual(GAMES.map((g) => g.href));
-    await expect(cards.filter({ hasText: "Instant Win" })).toHaveCount(5);
+    await expect(cards.filter({ hasText: "Instant Win" })).toHaveCount(GAMES.filter((game) => game.category === "Instant Win").length);
+    await expect(cards.filter({ hasText: "Number Game" })).toHaveCount(GAMES.filter((game) => game.category === "Number Game").length);
   });
 });
 
