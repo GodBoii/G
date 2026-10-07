@@ -22,10 +22,10 @@ export function Hero() {
           Demo credits · No real money
         </span>
         <h1 className="mt-5 max-w-3xl bg-linear-to-r from-fuchsia-300 via-pink-200 to-amber-200 bg-clip-text font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-transparent sm:text-5xl lg:text-6xl">
-          Play 10 arcade games with free demo credits
+          Play {GAMES.length} arcade games with free demo credits
         </h1>
         <p className="mt-5 max-w-2xl text-base text-ink-muted sm:text-lg">
-          Slots, a prize wheel, five instant-win games, Mines, Plinko, and a Satta Matka simulation. Every result comes
+          Slots, a prize wheel, instant-win games, Mines, Plinko, and number games including Matka, Jodi, and Pick 3. Every result comes
           from your browser&apos;s secure random number generator.
         </p>
         <p className="mt-3 text-sm text-ink-faint">Everyone starts with 1,000 demo credits. Top up any time.</p>
