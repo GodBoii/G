@@ -1,6 +1,7 @@
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import { KENO_PAYTABLE, type KenoPicks } from "../src/lib/logic/keno";
 import { ankOf } from "../src/lib/logic/matka";
+import { settleNumbers, type NumberGameKind } from "../src/lib/logic/numbers";
 import { PLINKO_X10 } from "../src/lib/logic/plinko";
 import { SCRATCH_PRIZES_X100, type ScratchSymbol } from "../src/lib/logic/scratch";
 import { evaluateLines, type SymbolId } from "../src/lib/logic/slots";
@@ -73,6 +74,30 @@ async function playOnce(page: Page, trigger: () => Promise<void>): Promise<Playe
 }
 
 const tripleClick = (target: Locator) => () => target.click({ clickCount: 3 });
+
+for (const kind of ["jodi", "pick3", "seven-up-down"] satisfies NumberGameKind[]) {
+  test(`${kind}: validates selection and settles exactly one draw`, async ({ page }) => {
+    await gotoGame(page, `/${kind}`);
+    const pick = kind === "jodi" ? "05" : kind === "pick3" ? "007" : "seven";
+    const play = page.getByTestId("play-button");
+    if (kind === "seven-up-down") {
+      await page.getByRole("button", { name: "Exactly 7", exact: true }).click();
+    } else {
+      await expect(play).toBeDisabled();
+      await page.getByTestId("number-pick").fill("x");
+      await expect(page.getByTestId("number-pick")).toHaveAttribute("aria-invalid", "true");
+      await expect(play).toBeDisabled();
+      await page.getByTestId("number-pick").fill(pick);
+    }
+    await expect(play).toBeEnabled();
+    const { bet, payout } = await playOnce(page, tripleClick(play));
+    const outcome = await page.getByTestId("result").getAttribute("data-outcome");
+    expect(outcome).not.toBeNull();
+    expect(payout).toBe(Math.floor(bet * settleNumbers(kind, pick, outcome ?? "") / 100));
+    await expect(page.getByTestId("history-item")).toHaveCount(1);
+    await expect(page.getByTestId("number-draw")).not.toContainText("?");
+  });
+}
 
 async function expectKind(page: Page, won: boolean): Promise<void> {
   await expect(page.getByTestId("result")).toHaveAttribute("data-kind", won ? "win" : "loss");
