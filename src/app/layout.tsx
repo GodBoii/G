@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { WalletProvider } from "@/context/WalletContext";
+import { GAMES } from "@/lib/games";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -11,7 +12,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: [
 export const metadata: Metadata = {
   title: { template: "%s | Gamess", default: "Gamess | Demo Credit Arcade" },
   description:
-    "Play 10 arcade games with free demo credits: slots, a prize wheel, five instant-win games, Mines, Plinko, and a Satta Matka simulation. No real money.",
+    `Play ${GAMES.length} arcade games with free demo credits: slots, a prize wheel, instant-win games, Mines, Plinko, Matka, Jodi, Pick 3, and 7 Up 7 Down. No real money.`,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
