@@ -3,7 +3,7 @@
 export type GameCategory = "Slots" | "Wheel" | "Instant Win" | "Mines" | "Plinko" | "Number Game";
 
 export interface GameMeta {
-  slug: "slots" | "wheel" | "scratch" | "dice" | "coinflip" | "limbo" | "keno" | "mines" | "plinko" | "satta-matka";
+  slug: "slots" | "wheel" | "scratch" | "dice" | "coinflip" | "limbo" | "keno" | "mines" | "plinko" | "satta-matka" | "jodi" | "pick3" | "seven-up-down";
   href: `/${string}`;
   name: string; // = page h1
   navLabel: string;
@@ -125,6 +125,39 @@ export const GAMES: readonly GameMeta[] = [
     category: "Number Game",
     icon: "🃏",
     accent: { from: "from-orange-500", to: "to-rose-500", ring: "ring-orange-400/60" },
+  },
+  {
+    slug: "jodi",
+    href: "/jodi",
+    name: "Jodi",
+    navLabel: "Jodi",
+    description: "Pick a pair from 00 to 99. Match the two-digit draw in order to win 95x in demo credits.",
+    tagline: "Two digits, one exact match",
+    category: "Number Game",
+    icon: "🎯",
+    accent: { from: "from-amber-500", to: "to-orange-500", ring: "ring-amber-400/60" },
+  },
+  {
+    slug: "pick3",
+    href: "/pick3",
+    name: "Pick 3",
+    navLabel: "Pick 3",
+    description: "Choose any three-digit number from 000 to 999. Match all three digits in order for a 950x demo-credit payout.",
+    tagline: "Your three digits, up to 950x",
+    category: "Number Game",
+    icon: "🔮",
+    accent: { from: "from-teal-500", to: "to-cyan-500", ring: "ring-teal-400/60" },
+  },
+  {
+    slug: "seven-up-down",
+    href: "/seven-up-down",
+    name: "7 Up 7 Down",
+    navLabel: "7 Up Down",
+    description: "Predict whether two dice total under 7, exactly 7, or over 7. Correct picks pay 2.28x or 5.70x in demo credits.",
+    tagline: "Under, over, or lucky seven",
+    category: "Number Game",
+    icon: "🎲",
+    accent: { from: "from-rose-500", to: "to-red-500", ring: "ring-rose-400/60" },
   },
 ];
 
