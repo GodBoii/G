@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLUMNS, DOZENS, EVEN_MONEY, nextWheelRotation, payoutMultiplier, pocketColor, POCKET_ANGLE,
+import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextWheelRotation, pocketColor, POCKET_ANGLE,
   spinRoulette, WHEEL_ORDER } from "../src/lib/logic/roulette";
 import { sequenceRng } from "./helpers/fakeRng";
 
@@ -10,18 +10,22 @@ describe("European roulette", () => {
     expect(WHEEL_ORDER.filter((number) => pocketColor(number) === "black")).toHaveLength(18);
   });
 
-  it("returns the standard gross payouts and excludes zero from outside bets", () => {
-    for (const { id } of [...DOZENS, ...COLUMNS, ...EVEN_MONEY]) expect(payoutMultiplier(id, 0)).toBe(0);
+  it("matches direct picks, twelve-pocket groups and eighteen-pocket groups", () => {
+    expect(matchesPocket(0, 0)).toBe(true);
+    expect(matchesPocket(32, 0)).toBe(false);
+    expect(matchesPocket(32, 32)).toBe(true);
+    for (const { id } of [...DOZENS, ...COLUMNS, ...OUTSIDE_PICKS]) expect(matchesPocket(id, 0)).toBe(false);
     for (const { id } of [...DOZENS, ...COLUMNS]) {
-      expect(WHEEL_ORDER.filter((number) => payoutMultiplier(id, number) === 3)).toHaveLength(12);
+      expect(WHEEL_ORDER.filter((number) => matchesPocket(id, number))).toHaveLength(12);
     }
-    for (const { id } of EVEN_MONEY) {
-      expect(WHEEL_ORDER.filter((number) => payoutMultiplier(id, number) === 2)).toHaveLength(18);
+    for (const { id } of OUTSIDE_PICKS) {
+      expect(WHEEL_ORDER.filter((number) => matchesPocket(id, number))).toHaveLength(18);
     }
-    expect(spinRoulette([{ target: 0, cents: 100 }, { target: "red", cents: 400 }], sequenceRng([0])))
-      .toEqual({ index: 0, number: 0, payout: 3600 });
-    expect(spinRoulette([{ target: 32, cents: 100 }, { target: "red", cents: 400 }], sequenceRng([1])).payout)
-      .toBe(4400);
+    expect(matchesPocket("red", 32)).toBe(true);
+    expect(matchesPocket("column-2", 32)).toBe(true);
+    expect(matchesPocket("column-3", 32)).toBe(false);
+    expect(spinRoulette(sequenceRng([0]))).toEqual({ index: 0, number: 0 });
+    expect(spinRoulette(sequenceRng([1]))).toEqual({ index: 1, number: 32 });
   });
 
   it("lands the pointer on the drawn pocket over successive spins", () => {
