@@ -21,6 +21,8 @@ export interface Settlement {
    * fields, never from this return value (pagehide may already have settled it).
    */
   settle(ticket: Ticket): number;
+  /** Close a folded hand without returning its stake. */
+  forfeit(ticket: Ticket): void;
 }
 
 export function useSettlement(): Settlement {
@@ -49,6 +51,10 @@ export function useSettlement(): Settlement {
     [credit],
   );
 
+  const forfeit = useCallback((ticket: Ticket): void => {
+    pending.current.delete(ticket.id);
+  }, []);
+
   // A decided outcome is paid even if the user navigates away or reloads mid-animation.
   useEffect(() => {
     const map = pending.current;
@@ -66,5 +72,5 @@ export function useSettlement(): Settlement {
     };
   }, [credit]);
 
-  return useMemo(() => ({ stake, settle }), [stake, settle]);
+  return useMemo(() => ({ stake, settle, forfeit }), [stake, settle, forfeit]);
 }
