@@ -1,42 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
-import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { WalletProvider } from "@/context/WalletContext";
-import { GAMES } from "@/lib/games";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["500", "600", "700", "800"], display: "swap" });
-
 export const metadata: Metadata = {
-  title: { template: "%s | Gamess", default: "Gamess | Demo Credit Arcade" },
-  description:
-    `Play ${GAMES.length} arcade games with free demo credits: slots, a prize wheel, instant-win games, Mines, Plinko, Matka, Jodi, Pick 3, and 7 Up 7 Down. No real money.`,
+  title: { template: "%s | House 37", default: "House 37 — Card & Wheel Arcade" },
+  description: "Play heads-up Teen Patti and European roulette with virtual chips at House 37.",
+  openGraph: {
+    title: "House 37 — Card & Wheel Arcade",
+    description: "Two classic tables. Free to play with virtual chips.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body className="flex min-h-dvh flex-col bg-bg-950 font-sans text-ink antialiased">
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-linear-to-b from-bg-900 to-bg-950">
-          <div className="bg-grid absolute inset-0" />
-          <div className="absolute -left-40 -top-40 size-[36rem] rounded-full bg-fuchsia-600/20 blur-3xl" />
-          <div className="absolute -right-40 -top-24 size-[32rem] rounded-full bg-sky-500/15 blur-3xl" />
-          <div className="absolute -bottom-48 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
-        </div>
-        <a
-          href="#main"
-          className="sr-only rounded-xl bg-amber-300 px-4 py-2 font-semibold text-bg-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
-        >
-          Skip to game
-        </a>
+    <html lang="en">
+      <body>
+        <a href="#main" className="skip-link">Skip to content</a>
         <WalletProvider>
-          <Navbar />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <div className="house">
+            <Navbar />
+            <main id="main" className="main">
+              <div className="content">{children}</div>
+              <footer className="footer">
+                <span>HOUSE<span className="accent">37</span></span>
+                <p>Free play with virtual chips. No cash value.</p>
+              </footer>
+            </main>
+          </div>
         </WalletProvider>
       </body>
     </html>
