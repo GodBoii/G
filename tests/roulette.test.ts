@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextWheelRotation, pocketColor, POCKET_ANGLE,
+import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextBallRotation, pocketColor, POCKET_ANGLE,
   spinRoulette, WHEEL_ORDER } from "../src/lib/logic/roulette";
 import { sequenceRng } from "./helpers/fakeRng";
 
@@ -28,12 +28,12 @@ describe("European roulette", () => {
     expect(spinRoulette(sequenceRng([1]))).toEqual({ index: 1, number: 32 });
   });
 
-  it("lands the pointer on the drawn pocket over successive spins", () => {
+  it("seats the counter-rotating ball in the drawn rotor pocket over successive spins", () => {
     let rotation = 0;
     for (let pocket = 0; pocket < WHEEL_ORDER.length; pocket++) {
-      const next = nextWheelRotation(rotation, pocket);
-      expect(next - rotation).toBeGreaterThanOrEqual(1800);
-      expect((next + pocket * POCKET_ANGLE) / 360).toBeCloseTo(Math.round((next + pocket * POCKET_ANGLE) / 360), 10);
+      const next = nextBallRotation(rotation, pocket);
+      expect(rotation - next).toBeGreaterThanOrEqual(1800);
+      expect((next - pocket * POCKET_ANGLE) / 360).toBeCloseTo(Math.round((next - pocket * POCKET_ANGLE) / 360), 10);
       rotation = next;
     }
   });
