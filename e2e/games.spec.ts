@@ -1,46 +1,47 @@
 import { expect, test } from "@playwright/test";
 import { setDraws } from "./draws";
 
-test("Teen Patti reveals a winning hand, then supports folding another hand", async ({ page }) => {
+test("Teen Patti deals six cards and supports peeking, showing and folding", async ({ page }) => {
   await setDraws(page, [7, 0, 6, 0, 5, 0]);
   await page.goto("/teen-patti");
-  const balance = page.getByTestId("balance");
-  await expect(balance).toHaveAttribute("data-cents", "100000");
-  await page.getByRole("button", { name: "25 chips" }).click();
   await page.getByRole("button", { name: "Deal cards" }).click();
-  await expect(balance).toHaveAttribute("data-cents", "97500");
+  const dealtCards = page.getByRole("img", { name: "Face-down card" });
+  await expect(dealtCards).toHaveCount(6);
+  await expect(page.getByRole("img", { name: "Jack of spades" })).toHaveCount(0);
   await page.getByRole("button", { name: "See cards" }).click();
   await expect(page.getByRole("img", { name: "Jack of spades" })).toBeVisible();
-  await page.getByRole("button", { name: "Chaal" }).click();
-  await expect(balance).toHaveAttribute("data-cents", "95000");
-  await expect(page.getByRole("button", { name: "Raised" })).toBeDisabled();
+  await expect(dealtCards).toHaveCount(3);
   await page.getByRole("button", { name: "Show hands" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "You win" })).toBeVisible();
-  await expect(balance).toHaveAttribute("data-cents", "105000");
+  await expect(page.getByRole("status")).toHaveText("You win");
+  await expect(dealtCards).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Recent hands" })).toContainText("Pure sequence");
   await page.getByRole("button", { name: "Deal again" }).click();
   await page.getByRole("button", { name: "Fold" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "You folded" })).toBeVisible();
-  await expect(balance).toHaveAttribute("data-cents", "102500");
+  await expect(page.getByRole("status")).toHaveText("You folded");
+  await expect(page.getByRole("region", { name: "Recent hands" })).toContainText("Blind fold");
 });
 
-test("roulette stacks chips, allows undo, pays zero and retains the board", async ({ page }) => {
-  await setDraws(page, [0]);
+test("roulette previews, spins and shows which predictions matched", async ({ page }) => {
+  await setDraws(page, [1, 0]);
   await page.goto("/roulette");
   const spin = page.getByRole("button", { name: "Spin wheel" });
-  const zero = page.getByRole("button", { name: /bet on 0 green/i });
-  await expect(spin).toBeDisabled();
-  await zero.click();
-  await page.getByRole("button", { name: "Bet on Red", exact: true }).click();
-  await zero.click();
-  await page.getByRole("button", { name: "Undo chip" }).click();
-  await expect(zero).toHaveAccessibleName("Bet on 0 green, 10.00 chips placed");
+  const number = page.getByRole("button", { name: "Pick 32 red" });
+  const red = page.getByRole("button", { name: "Pick Red", exact: true });
+  const odd = page.getByRole("button", { name: "Pick Odd", exact: true });
+  await expect(spin).toBeEnabled();
+  await number.click();
+  await red.click();
+  await odd.click();
+  await expect(red).toHaveAttribute("aria-pressed", "true");
   await spin.click();
   await expect(page.getByRole("button", { name: "Spinning…" })).toBeDisabled();
-  await expect(zero).toBeDisabled();
-  await expect(page.getByRole("status").filter({ hasText: "green 0" })).toContainText("+340.00 chips net");
-  await expect(page.getByTestId("balance")).toHaveAttribute("data-cents", "134000");
-  await expect(zero).toHaveAttribute("data-hit", "true");
-  await expect(zero).toHaveAccessibleName("Bet on 0 green, 10.00 chips placed");
-  await page.getByRole("button", { name: "Clear bets" }).click();
-  await expect(spin).toBeDisabled();
+  await expect(number).toBeDisabled();
+  await expect(page.getByRole("status")).toContainText("2 of 3 picks matched");
+  await expect(page.getByRole("status")).toContainText("red 32");
+  await expect(number).toHaveAttribute("data-hit", "true");
+  await expect(red).toHaveAttribute("data-hit", "true");
+  await expect(odd).not.toHaveAttribute("data-hit", "true");
+  await page.getByRole("button", { name: "Clear" }).click();
+  await expect(red).toHaveAttribute("aria-pressed", "false");
+  await expect(spin).toBeEnabled();
 });
