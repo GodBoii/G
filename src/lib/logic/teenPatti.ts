@@ -3,7 +3,7 @@ import { sampleWithoutReplacement, type Rng } from "../rng";
 const SUITS = ["spades", "hearts", "clubs", "diamonds"] as const;
 export type Suit = (typeof SUITS)[number];
 export type Card = { rank: number; suit: Suit };
-type Hand = readonly Card[];
+type Hand = readonly [Card, Card, Card];
 
 const deck = SUITS.flatMap((suit) => Array.from({ length: 13 }, (_, index) => ({ rank: index + 2, suit })));
 
@@ -48,6 +48,9 @@ export function compareHands(player: Hand, dealer: Hand): number {
 }
 
 export function dealHands(rng?: Rng) {
-  const cards = sampleWithoutReplacement(deck, 6, rng);
-  return { player: cards.slice(0, 3), dealer: cards.slice(3) };
+  const [playerFirst, dealerFirst, playerSecond, dealerSecond, playerThird, dealerThird] =
+    sampleWithoutReplacement(deck, 6, rng);
+  const player: Hand = [playerFirst, playerSecond, playerThird];
+  const dealer: Hand = [dealerFirst, dealerSecond, dealerThird];
+  return { player, dealer };
 }
