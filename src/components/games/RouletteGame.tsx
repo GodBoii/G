@@ -1,84 +1,53 @@
 "use client";
 
 import { useRef, useState, type CSSProperties } from "react";
-import { useWallet } from "@/context/WalletContext";
 import { useHistory } from "@/hooks/useHistory";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useRoundLock } from "@/hooks/useRoundLock";
-import { useSettlement } from "@/hooks/useSettlement";
 import { useTimers } from "@/hooks/useTimers";
-import { COLUMNS, DOZENS, EVEN_MONEY, nextWheelRotation, pocketColor, spinRoulette, targetLabel,
-  type BetTarget, type PlacedChip } from "@/lib/logic/roulette";
-import { formatCredits, MAX_BET } from "@/lib/money";
+import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextWheelRotation, pickLabel, pocketColor, spinRoulette,
+  type Pick } from "@/lib/logic/roulette";
 import { playErrorMessage } from "@/lib/rng";
-import { ChipPicker } from "./ChipPicker";
-import { RouletteWheel } from "./RouletteWheel";
+import { RouletteWheel, SPIN_DURATION } from "./RouletteWheel";
 import { TableHeading } from "./TableHeading";
 
 const numbers = Array.from({ length: 36 }, (_, index) => index + 1);
-const SPIN_DURATION = 2450;
-type SpinResult = { id: number; number: number; net: number };
+type SpinResult = { id: number; number: number; matched: readonly Pick[]; pickCount: number };
 
 export function RouletteGame() {
-  const { balanceCents } = useWallet();
   const { tryLock, unlock, busy } = useRoundLock();
-  const { stake, settle } = useSettlement();
   const timers = useTimers();
   const reducedMotion = useReducedMotion();
   const history = useHistory<SpinResult>();
-  const [chips, setChips] = useState<readonly PlacedChip[]>([]);
-  const [denomination, setDenomination] = useState(10);
+  const [picks, setPicks] = useState<readonly Pick[]>([]);
   const [wheel, setWheel] = useState({ rotation: 0, ballRotation: 0 });
   const [error, setError] = useState("");
   const wheelStage = useRef<HTMLDivElement>(null);
   const latest = history.entries[0];
 
-  const grouped = new Map<BetTarget, number>();
-  let total = 0;
-  for (const { target, cents } of chips) {
-    grouped.set(target, (grouped.get(target) ?? 0) + cents);
-    total += cents;
-  }
-  const chipCents = denomination * 100;
-  const canSpin = total > 0 && balanceCents !== null && total <= balanceCents;
-
-  function addChip(target: BetTarget) {
-    if (busy || balanceCents === null) return;
-    if (total + chipCents > balanceCents) {
-      setError("Choose a smaller chip or add to your balance.");
-      return;
-    }
-    if (total + chipCents > MAX_BET) {
-      setError("The table limit is 1,000,000 chips.");
-      return;
-    }
-    setChips((selected) => [...selected, { target, cents: chipCents }]);
+  function togglePick(pick: Pick) {
+    setPicks((selected) => selected.includes(pick) ? selected.filter((item) => item !== pick) : [...selected, pick]);
     setError("");
   }
 
   function spin() {
-    if (!canSpin || !tryLock()) return;
+    if (!tryLock()) return;
     setError("");
     try {
-      const result = spinRoulette(chips);
-      const ticket = stake(total, result.payout);
-      if (!ticket) {
-        setError("Your balance changed. Remove chips or refill to spin.");
-        unlock();
-        return;
-      }
-
+      const result = spinRoulette();
+      const id = (latest?.id ?? 0) + 1;
       setWheel((previous) => ({
         rotation: nextWheelRotation(previous.rotation, result.index),
         ballRotation: previous.ballRotation - 4 * 360,
       }));
+
       if (window.matchMedia("(max-width: 760px)").matches) {
         wheelStage.current?.scrollIntoView({ block: "start", behavior: reducedMotion ? "instant" : "smooth" });
       }
-      const placedTicket = ticket;
+
       function finish() {
-        settle(placedTicket);
-        history.add({ id: placedTicket.id, number: result.number, net: result.payout - total });
+        history.add({ id, number: result.number, matched: picks.filter((pick) => matchesPocket(pick, result.number)),
+          pickCount: picks.length });
         unlock();
       }
       if (reducedMotion) finish();
@@ -89,111 +58,84 @@ export function RouletteGame() {
     }
   }
 
-  function betButton(target: BetTarget) {
-    const number = typeof target === "number";
-    const color = number ? pocketColor(target) : target === "red" || target === "black" ? target : undefined;
-    const amount = grouped.get(target) ?? 0;
-    const style: (CSSProperties & Record<`--${string}`, number>) | undefined = number && target > 0 ? {
-      "--board-row": 3 - ((target - 1) % 3),
-      "--board-column": Math.ceil(target / 3),
+  function pickButton(pick: Pick) {
+    const number = typeof pick === "number";
+    const color = number ? pocketColor(pick) : pick === "red" || pick === "black" ? pick : undefined;
+    const style: (CSSProperties & Record<`--${string}`, number>) | undefined = number && pick > 0 ? {
+      "--board-row": 3 - ((pick - 1) % 3),
+      "--board-column": Math.ceil(pick / 3),
     } : undefined;
-    const name = number ? `${target} ${color}` : targetLabel(target);
-    const hit = !busy && number && latest?.number === target;
-
+    const label = number ? `${pick} ${color}` : pickLabel(pick);
     return (
-      <button key={target} type="button" className="bet-cell" data-color={color} data-staked={amount > 0}
-        data-hit={hit || undefined} disabled={busy || balanceCents === null} style={style}
-        aria-label={`Bet on ${name}${amount ? `, ${formatCredits(amount)} chips placed` : ""}`}
-        onClick={() => addChip(target)}>
-        <span>{targetLabel(target)}</span>
-        {amount > 0 && <span aria-hidden="true" className="placed-chip">{amount / 100}</span>}
+      <button className="pick-cell" key={pick} type="button" data-color={color} style={style}
+        aria-label={`Pick ${label}`} aria-pressed={picks.includes(pick)} disabled={busy}
+        data-hit={!busy && (latest?.number === pick || latest?.matched.includes(pick)) || undefined}
+        onClick={() => togglePick(pick)}>
+        {pickLabel(pick)}
       </button>
     );
   }
 
-  const net = latest?.net;
-  return (
-    <>
-      <TableHeading title="European roulette" description="The classic single-zero wheel." icon="◉" theme="roulette" />
-      <div className="game-grid roulette-grid">
-        <section className="game-surface roulette-surface" aria-label="Roulette table">
-          <div className="surface-caption"><span>HOUSE 37 &nbsp;/&nbsp; ROULETTE</span><span>SINGLE ZERO</span></div>
-          <div className="wheel-stage" ref={wheelStage}>
-            <RouletteWheel {...wheel} spinning={busy} hasResult={Boolean(latest)} />
-            <div className="wheel-result" role="status" data-outcome={!busy && net !== undefined && net > 0 ? "win" : undefined}>
-              {busy ? <strong>Wheel spinning…</strong> : latest ? (
-                <>
-                  <span className="result-pocket" data-color={pocketColor(latest.number)}>{latest.number}</span>
-                  <strong>{pocketColor(latest.number)} {latest.number}</strong>
-                  <span>{latest.net > 0 ? "+" : latest.net < 0 ? "−" : ""}{formatCredits(Math.abs(latest.net))} chips net</span>
-                </>
-              ) : <strong>Place your chips</strong>}
-            </div>
-          </div>
-          <div className="board">
-            <div className="board-heading">
-              <div><h2>Betting board</h2><p>Tap a spot to place your selected chip.</p></div>
-              <ChipPicker label="Chip value" value={denomination} onChange={(value) => { setDenomination(value); setError(""); }}
-                disabled={busy} />
-            </div>
-            <div className="inside-bets" aria-label="Number bets" role="group">
-              <div className="zero-bet">{betButton(0)}</div>
-              <div className="number-grid">{numbers.map(betButton)}</div>
-            </div>
-            <div className="outside-bets three" aria-label="Dozen bets" role="group">{DOZENS.map(({ id }) => betButton(id))}</div>
-            <div className="outside-bets three" aria-label="Column bets" role="group">{COLUMNS.map(({ id }) => betButton(id))}</div>
-            <div className="outside-bets six" aria-label="Even-money bets" role="group">{EVEN_MONEY.map(({ id }) => betButton(id))}</div>
-            <p className="board-error" role="status">{error}</p>
-          </div>
-        </section>
+  const matchLabel = latest && latest.pickCount > 0 ?
+    `${latest.matched.length} of ${latest.pickCount} ${latest.pickCount === 1 ? "pick" : "picks"} matched` : null;
 
-        <aside className="game-controls" aria-label="Roulette controls">
-          <section className="control-panel">
-            <h2>Your bets</h2>
-            <div className="roulette-action">
-              <div className="amount-line"><span>Total stake</span><strong>{formatCredits(total)} chips</strong></div>
-              <button className="primary game-primary" type="button" onClick={spin} disabled={busy || !canSpin}>
-                {busy ? "Spinning…" : "Spin wheel"} <span aria-hidden="true">⟳</span>
-              </button>
+  return (
+    <div className="game-room" data-theme="roulette">
+      <TableHeading title="European roulette" description="Call the pocket. Watch where the ball lands." />
+      <div className="table-room roulette-room">
+        <div className="roulette-stage" ref={wheelStage}>
+          <div className="roulette-light" aria-hidden="true" />
+          <RouletteWheel {...wheel} spinning={busy} showBall={Boolean(latest)} />
+          <div className="spin-status" role="status">
+            {busy ? <strong>Wheel spinning…</strong> : latest ? (
+              <div className="landed-result" key={latest.id}>
+                <span className="result-pocket" aria-hidden="true" data-color={pocketColor(latest.number)}>{latest.number}</span>
+                <div><strong>{pocketColor(latest.number)} {latest.number}</strong>{matchLabel && <span>{matchLabel}</span>}</div>
+              </div>
+            ) : <strong>Ready to spin</strong>}
+          </div>
+        </div>
+        <section className="roulette-console" aria-labelledby="pick-heading">
+          <div className="console-heading">
+            <h2 id="pick-heading">Make a prediction</h2>
+            <p>Select a number or group, or spin to explore the wheel.</p>
+          </div>
+          <div className="inside-picks" role="group" aria-label="Numbers">
+            <div className="zero-pick">{pickButton(0)}</div>
+            <div className="number-grid">{numbers.map(pickButton)}</div>
+          </div>
+          <div className="outside-picks three" role="group" aria-label="Dozens">{DOZENS.map(({ id }) => pickButton(id))}</div>
+          <div className="outside-picks three" role="group" aria-label="Columns">{COLUMNS.map(({ id }) => pickButton(id))}</div>
+          <div className="outside-picks six" role="group" aria-label="Color, parity and range">{OUTSIDE_PICKS.map(({ id }) => pickButton(id))}</div>
+          <div className="roulette-actions">
+            <div className="pick-summary">
+              <span>{picks.length === 0 ? "No picks" : `${picks.length} ${picks.length === 1 ? "pick" : "picks"}`}</span>
+              <button type="button" className="text-button" disabled={busy || picks.length === 0} onClick={() => setPicks([])}>Clear</button>
             </div>
-            <div className="bet-tools">
-              <button type="button" className="secondary" disabled={busy || chips.length === 0}
-                onClick={() => { setChips((selected) => selected.slice(0, -1)); setError(""); }}>Undo chip</button>
-              <button type="button" className="secondary" disabled={busy || chips.length === 0}
-                onClick={() => { setChips([]); setError(""); }}>Clear bets</button>
-            </div>
-            {grouped.size > 0 ? (
-              <ul className="bet-slip">
-                {[...grouped].map(([target, cents]) => <li key={target}>
-                  <span>{targetLabel(target)}</span><strong>{formatCredits(cents)}</strong>
-                </li>)}
-              </ul>
-            ) : <p className="control-hint">Add a chip to the board to start.</p>}
-            {balanceCents !== null && total > balanceCents && (
-              <p className="control-hint" role="status">Remove chips or refill your balance.</p>
-            )}
-          </section>
-          <section className="control-panel compact">
-            <h2>Recent spins</h2>
-            {history.entries.length === 0 ? <p className="empty">Winning numbers appear here.</p> :
-              <ol className="spin-history">
-                {history.entries.slice(0, 10).map(({ id, number }) => (
-                  <li className="result-pocket" key={id} data-color={pocketColor(number)}
-                    aria-label={`${pocketColor(number)} ${number}`}>{number}</li>
-                ))}
-              </ol>}
-          </section>
-          <details className="control-panel rules">
-            <summary>Rules &amp; payouts</summary>
-            <p>The wheel has 37 pockets, numbered 0–36. Each spin settles every chip on the board. Zero pays straight-up zero bets only. Your layout stays on the board so you can edit it before the next spin.</p>
-            <ol>
-              <li><strong>35 to 1</strong><span>One number</span></li>
-              <li><strong>2 to 1</strong><span>Dozen or column</span></li>
-              <li><strong>1 to 1</strong><span>Color, parity or high/low</span></li>
-            </ol>
-          </details>
-        </aside>
+            <button type="button" className="primary" disabled={busy} onClick={spin}>
+              {busy ? "Spinning…" : "Spin wheel"} <span aria-hidden="true">↻</span>
+            </button>
+          </div>
+          {error && <p className="round-error" role="alert">{error}</p>}
+        </section>
       </div>
-    </>
+      <div className="table-notes">
+        <section aria-labelledby="spins-heading">
+          <h2 id="spins-heading">Recent spins</h2>
+          {history.entries.length > 0 ? (
+            <ol className="spin-history">
+              {history.entries.slice(0, 10).map(({ id, number }) => (
+                <li key={id} className="result-pocket" data-color={pocketColor(number)}
+                  aria-label={`${pocketColor(number)} ${number}`}>{number}</li>
+              ))}
+            </ol>
+          ) : <p>Numbers appear here after each spin.</p>}
+        </section>
+        <details className="table-rules">
+          <summary>How to play</summary>
+          <p>Each spin lands in one of 37 pockets. A number, color, dozen, column, parity or range pick can match. Zero matches only a direct pick on zero. Your picks stay selected until you change or clear them.</p>
+        </details>
+      </div>
+    </div>
   );
 }
