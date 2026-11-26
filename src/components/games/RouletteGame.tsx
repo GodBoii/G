@@ -5,7 +5,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useRoundLock } from "@/hooks/useRoundLock";
 import { useTimers } from "@/hooks/useTimers";
-import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextWheelRotation, pickLabel, pocketColor, spinRoulette,
+import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextBallRotation, pickLabel, pocketColor, spinRoulette,
   type Pick } from "@/lib/logic/roulette";
 import { playErrorMessage } from "@/lib/rng";
 import { RouletteWheel, SPIN_DURATION } from "./RouletteWheel";
@@ -37,11 +37,11 @@ export function RouletteGame() {
       const result = spinRoulette();
       const id = (latest?.id ?? 0) + 1;
       setWheel((previous) => ({
-        rotation: nextWheelRotation(previous.rotation, result.index),
-        ballRotation: previous.ballRotation - 4 * 360,
+        rotation: previous.rotation + 545,
+        ballRotation: nextBallRotation(previous.ballRotation, result.index),
       }));
 
-      if (window.matchMedia("(max-width: 760px)").matches) {
+      if (window.matchMedia("(max-width: 760px), (max-width: 950px) and (max-height: 500px)").matches) {
         wheelStage.current?.scrollIntoView({ block: "start", behavior: reducedMotion ? "instant" : "smooth" });
       }
 
