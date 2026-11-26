@@ -20,10 +20,11 @@
   box-shadow: 0 3px 0 #846e4e, 0 8px 12px #090c09a6;
 }
 .card-back {
-  border: 1px solid #b99b69;
+  border: 2px solid #ffe5ac;
   background:
-    repeating-linear-gradient(42deg, #b39c6935 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(-42deg, #b39c6935 0 1px, #173d33 1px 5px);
+    repeating-radial-gradient(ellipse at 50% 50%, transparent 0 9%, #dfbd766b 9.5% 10%, transparent 11% 16%),
+    repeating-conic-gradient(from 22.5deg at 50% 50%, #fff0bb20 0 1deg, transparent 1deg 15deg),
+    linear-gradient(135deg,#145953,#071f25 46%,#10524a);
   transform: rotateY(0deg);
 }
 .card-back::after, .card-face::after {
@@ -58,6 +59,10 @@
   color: #142b20;
 }
 .card-face[data-red="true"] { color: #8c2725; }
+.card-pips { display: flex; justify-content: space-around; width: 56%; height: 72%; }
+.pip-column { display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
+.pip-column i { font: 400 19cqw/.78 Georgia, serif; }
+.pip-column i:last-child:not(:first-child) { rotate: 180deg; }
 .card-turn:has(.card-face) { transform: rotateY(180deg); }
 .card-index {
   position: absolute;
@@ -155,6 +160,24 @@
   transform: translateZ(17px);
   background: conic-gradient(#b5854e, #583719 16%, #dcb776 37%, #28190e 66%, #b5854e);
   box-shadow: 0 7px 7px #241710, inset 0 0 0 3px #eec88b52;
+}
+.spindle-stem::before, .spindle-stem::after {
+  content: "";
+  position: absolute;
+  width: 190%;
+  height: 19%;
+  border-radius: 40%;
+  border: 1px solid #b78040;
+  background: linear-gradient(#fff1c2, #cf914a 48%, #69401c 70%, #dcaa5b);
+  box-shadow: 0 3px 2px #392512a3;
+}
+.spindle-stem::after { rotate: 90deg; }
+.roulette-wheel[data-spinning="true"] .spindle-stem {
+  animation: spindle-turn var(--spin-time) var(--ease-spin);
+}
+@keyframes spindle-turn {
+  from { transform: translateZ(17px) rotate(-720deg); }
+  to { transform: translateZ(17px) rotate(0); }
 }
 .spindle-knob {
   inset: 24%;
