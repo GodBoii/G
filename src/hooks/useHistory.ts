@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { HISTORY_LIMIT } from "@/lib/money";
+const HISTORY_LIMIT = 20;
 
 export function useHistory<T>() {
   const [entries, setEntries] = useState<readonly T[]>([]);
