@@ -1,0 +1,200 @@
+.playing-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border-radius: 8%;
+  perspective: 650px;
+}
+.card-turn {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.card-side {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8%;
+  backface-visibility: hidden;
+  box-shadow: 0 3px 0 #846e4e, 0 8px 12px #090c09a6;
+}
+.card-back {
+  border: 1px solid #b99b69;
+  background:
+    repeating-linear-gradient(42deg, #b39c6935 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(-42deg, #b39c6935 0 1px, #173d33 1px 5px);
+  transform: rotateY(0deg);
+}
+.card-back::after, .card-face::after {
+  content: "";
+  position: absolute;
+  inset: 5%;
+  border: 1px solid #b99b696e;
+  border-radius: 5%;
+  pointer-events: none;
+}
+.card-back span {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 43%;
+  aspect-ratio: 1;
+  border: 1px solid #d6b479;
+  transform: rotate(45deg);
+  border-radius: 12%;
+  background: #173d34;
+  color: #f0d298;
+  font-size: clamp(.78rem, 2.4vw, 2.3rem);
+}
+.card-face {
+  transform: rotateY(180deg);
+  container-type: inline-size;
+  isolation: isolate;
+  border: 1px solid #fff0cc;
+  background:
+    repeating-linear-gradient(125deg, #4e2e100a 0 1px, transparent 1px 4px),
+    linear-gradient(150deg, #fff5dc 5%, #eddbbb 53%, #d7bb91);
+  color: #142b20;
+}
+.card-face[data-red="true"] { color: #8c2725; }
+.card-turn:has(.card-face) { transform: rotateY(180deg); }
+.card-index {
+  position: absolute;
+  top: 8%;
+  left: 9%;
+  display: grid;
+  justify-items: center;
+  font: 700 17cqw/.88 var(--utility);
+  letter-spacing: -.11em;
+}
+.card-index small { font: 400 12cqw/1 Georgia, serif; letter-spacing: normal; }
+.card-index-bottom { inset: auto 9% 8% auto; transform: rotate(180deg); }
+.card-suit {
+  display: grid;
+  place-items: center;
+  width: 54%;
+  aspect-ratio: 1;
+  border: 1px solid #9d795e50;
+  border-radius: 50%;
+  background: repeating-conic-gradient(#a98a5014 0 3deg, transparent 3deg 11deg);
+  font: 400 40cqw/.8 Georgia, serif;
+}
+.card-suit::after { content: ""; position: absolute; width: 42%; aspect-ratio: 1; border: 1px solid #9d795e3d; border-radius: 50%; }
+
+.roulette-wheel {
+  position: relative;
+  width: min(100%, 450px);
+  aspect-ratio: 1;
+  perspective: 1050px;
+}
+.wheel-plane {
+  position: absolute;
+  inset: 3%;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--wheel-pitch, 32deg)) rotateZ(var(--wheel-yaw, 0deg));
+}
+.wheel-shell, .wheel-rim, .wheel-track, .wheel-dish, .wheel-spindle, .wheel-rotor, .ball-orbit {
+  position: absolute;
+  border-radius: 50%;
+}
+.wheel-shell {
+  inset: 0;
+  transform: translateZ(-12px);
+  background: linear-gradient(155deg, #9e692e, #6f3d24 42%, #21110d 84%);
+  box-shadow: 0 6px 0 #3f281a, 0 9px 0 #6d492a, 0 16px 0 #251913, 0 39px 37px #060805c7;
+}
+.wheel-rim {
+  inset: 0;
+  transform: translateZ(7px);
+  border: 1px solid #e3b471;
+  background: conic-gradient(from 41deg, #f2d497, #775131 11%, #dfb372 23%, #5e3624 36%, #cfa367 54%, #61442a 70%, #9b6a38 80%, #f0d095);
+  box-shadow: inset 0 0 0 2px #f9e2b340, inset 0 0 0 7px #482b1f40, 0 4px 0 #744523;
+}
+.wheel-track {
+  inset: 3.5%;
+  transform: translateZ(9px);
+  border: 1px solid #f2c28493;
+  background:
+    radial-gradient(circle, #21140e 60%, #7d5938 76%, #41261a 80%, #a17244 87%, #241b15 92%);
+  box-shadow: inset 0 0 0 3px #eec28a3a, inset 0 0 0 5px #211912;
+}
+.wheel-rotor {
+  inset: 8%;
+  transform: translateZ(11px) rotateZ(var(--wheel-rotation));
+  border: 1px solid #e2be83;
+  background: var(--pockets);
+  box-shadow: 0 0 0 2px #251915, inset 0 0 0 2px #e8b78270, inset 0 0 24px #160f0dbd;
+}
+.wheel-pocket { position: absolute; inset: 0; color: #ffedcc; text-align: center; font: 700 clamp(.58rem, 1.21vw, .85rem)/1 var(--utility); }
+.wheel-pocket span { position: absolute; top: 8.5%; left: 50%; translate: -50% 0; }
+.wheel-dish {
+  inset: 27%;
+  transform: translateZ(14px);
+  border: 2px solid #dcb77e;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, #57352015 0 1px, #d6a26620 1px 3px),
+    conic-gradient(from 25deg, #f1c989, #624323 13%, #a6723e 32%, #271d15 44%, #e2b379 58%, #6d4b30 77%, #b28b57 93%, #f1c989);
+  box-shadow: 0 0 0 3px #241c13, 0 0 0 4px #d7a974, inset 0 0 25px #23150cbf;
+}
+.wheel-spindle {
+  inset: 40%;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+.spindle-stem, .spindle-knob {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #efc785ab;
+}
+.spindle-stem {
+  inset: 5%;
+  transform: translateZ(17px);
+  background: conic-gradient(#b5854e, #583719 16%, #dcb776 37%, #28190e 66%, #b5854e);
+  box-shadow: 0 7px 7px #241710, inset 0 0 0 3px #eec88b52;
+}
+.spindle-knob {
+  inset: 24%;
+  transform: translateZ(24px);
+  color: #fff0c7;
+  background: radial-gradient(circle at 34% 22%, #f7d69f, #d2a269 37%, #7e502c 68%, #462c17);
+  box-shadow: 0 4px 1px #522d16;
+  font: clamp(.77rem, 2.1vw, 1.35rem)/1 Georgia, serif;
+}
+.ball-orbit { inset: 0; transform: translateZ(19px) rotateZ(var(--ball-rotation)); pointer-events: none; }
+.ball-orbit[data-visible="false"] { visibility: hidden; }
+.wheel-ball {
+  position: absolute;
+  top: 20.1%;
+  left: 50%;
+  translate: -50% 0;
+  width: 4.25%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 33% 23%, #fffdf0, #f7deaa 42%, #9f7752 78%);
+  box-shadow: 0 2px 4px #231310c9;
+}
+.wheel-pointer {
+  position: absolute;
+  left: 50%;
+  top: 2.6%;
+  width: 6%;
+  aspect-ratio: 1;
+  transform: translate3d(-50%, 0, 23px);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: linear-gradient(120deg, #fff0c6, #b6864e);
+}
+.roulette-wheel[data-spinning="true"] :is(.wheel-rotor, .ball-orbit) {
+  transition: transform var(--spin-time) var(--ease-spin);
+}
+.roulette-wheel[data-spinning="true"] .ball-orbit { transition-timing-function: cubic-bezier(.07, .58, .22, 1); }
+.roulette-wheel[data-spinning="true"] .wheel-ball { animation: ball-drop var(--spin-time) var(--ease-spin) both; }
+@keyframes ball-drop {
+  from, 38% { transform: translateY(-228%); }
+  75% { transform: translateY(-126%); }
+  88% { transform: translateY(13%); }
+  to { transform: translateY(0); }
+}
