@@ -148,7 +148,7 @@
   .entrance-copy { gap: 12px; }
 }
 @media (max-width: 520px) {
-  .lobby-intro { min-height: 290px; padding: 24px; align-content: end; gap: 12px; }
+  .lobby-intro { min-height: clamp(220px, 33svh, 290px); padding: 24px; align-content: end; gap: 12px; }
   .lobby-intro h1 { font-size: clamp(3.9rem,14vw,5rem); }
   .salon-backdrop img { object-position: 75% 50%; }
   .salon-backdrop::after { background: linear-gradient(25deg,#052021fa 4%,#052021b3 32%,transparent 65%); }
