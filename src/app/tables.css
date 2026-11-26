@@ -5,9 +5,9 @@
   min-height: 100dvh;
   margin-inline: auto;
   padding: 24px clamp(16px, 4.7vw, 68px) 44px;
-  --room-halo: #244638;
+  --room-halo: #086352;
 }
-.game-room[data-theme="roulette"] { --room-halo: #542c24; }
+.game-room[data-theme="roulette"] { --room-halo: #8c392c; }
 .game-room::before {
   content: "";
   position: absolute;
@@ -22,9 +22,14 @@
 }
 .game-heading {
   position: relative;
-  text-align: center;
+  text-align: left;
   margin-bottom: clamp(19px, 3vw, 34px);
-  padding-top: 28px;
+  isolation: isolate;
+  overflow: clip;
+  padding: 58px clamp(20px, 3.4vw, 54px) 22px;
+  border-block: 1px solid #d5af6b78;
+  background: linear-gradient(90deg,#092024 18%,#092024d9 47%,transparent 80%),
+    url("/queen-of-hearts.webp") 85% 38% / cover;
   animation: enter-room var(--enter-time) var(--ease-enter) both;
 }
 .game-heading h1 {
@@ -35,7 +40,7 @@
 .game-heading p { margin-top: 9px; color: var(--muted); font-size: clamp(.87rem, 1.38vw, 1.04rem); }
 .back-link {
   position: absolute;
-  inset: 0 auto auto 0;
+  inset: 4px auto auto clamp(20px, 3.4vw, 54px);
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -67,8 +72,8 @@
   overflow: clip;
   border-radius: 21px 21px 0 0;
   background:
-    radial-gradient(ellipse at 51% 28%, #183f31 0%, #151d16 72%),
-    repeating-linear-gradient(155deg, #f9e6a908 0 1px, transparent 1px 6px);
+    repeating-radial-gradient(ellipse at 50% 100%, transparent 0 28px, #eccf9720 29px, transparent 30px 38px),
+    linear-gradient(145deg, #183e36, #102221);
 }
 .patti-felt {
   position: absolute;
@@ -76,13 +81,13 @@
   inset: 4% 2.4% 8%;
   display: grid;
   place-items: center;
-  border: clamp(7px, 1.16vw, 16px) solid #502a1b;
+  border: clamp(7px, 1.16vw, 16px) solid #754229;
   border-radius: 48% / 47%;
   outline: 1px solid #e5ba7f;
   outline-offset: -2px;
   background:
     repeating-linear-gradient(49deg, #afe6bf0a 0 1px, transparent 1px 4px),
-    radial-gradient(ellipse at 49% 37%, #30664f 5%, #1f4d3a 53%, #142f25 93%);
+    radial-gradient(ellipse at 49% 37%, #23816b 5%, #0c6451 53%, #073c33 93%);
   transform: perspective(1050px) rotateX(20deg);
   box-shadow: 0 9px 0 #311f17, 0 11px 0 #825937, 0 24px 29px #070d09c9, inset 0 0 42px #11251cbf;
 }
@@ -139,7 +144,8 @@
 }
 @keyframes turn-card {
   0% { transform: translateY(0) rotateY(0deg); }
-  50% { transform: translateY(-14px) rotateY(100deg); }
+  48% { transform: translate3d(0,-17px,28px) rotateY(88deg) rotateZ(-4deg); }
+  82% { transform: translate3d(0,-4px,8px) rotateY(166deg) rotateZ(2deg); }
   100% { transform: translateY(0) rotateY(180deg); }
 }
 .hand-status { min-height: 34px; align-self: center; display: grid; place-items: center; text-align: center; font-size: .9rem; color: #f0dfbe; }
@@ -185,8 +191,8 @@
   scroll-margin: 12px;
   border-radius: 21px 0 0 21px;
   background:
-    repeating-linear-gradient(42deg, #f5c99806 0 1px, transparent 1px 5px),
-    radial-gradient(ellipse at 52% 40%, #593327, #271e18 71%);
+    repeating-radial-gradient(ellipse at 50% 50%, transparent 0 31px, #fbd09427 32px, transparent 33px 39px),
+    radial-gradient(ellipse at 52% 40%, #a1432f, #592427 71%);
   --wheel-pitch: 32deg;
 }
 .roulette-light {
@@ -237,9 +243,9 @@
 .outside-picks { margin-top: 4px; }
 .outside-picks.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .outside-picks.six { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-[data-color="red"] { --pocket-fill: #742e2d; }
+[data-color="red"] { --pocket-fill: #923a31; }
 [data-color="black"] { --pocket-fill: #22251f; }
-[data-color="green"] { --pocket-fill: #24563d; }
+[data-color="green"] { --pocket-fill: #146751; }
 .pick-cell {
   position: relative;
   min-width: 0;
@@ -313,7 +319,7 @@
   .number-grid .pick-cell { grid-row: auto; grid-column: auto; }
 }
 @media (max-width: 920px) {
-  .game-heading { padding-top: 42px; }
+  .game-heading { padding-top: 53px; }
   .roulette-room { grid-template-columns: minmax(0, 1fr); }
   .roulette-stage { border-radius: 21px 21px 0 0; }
   .roulette-stage .roulette-wheel { width: min(72%, 385px); }
@@ -326,7 +332,8 @@
   .game-room { padding: 13px 12px 25px; }
   .game-room[data-theme="roulette"] { padding-bottom: calc(91px + env(safe-area-inset-bottom)); }
   .game-heading h1 { font-size: clamp(3.2rem, 11vw, 4.65rem); }
-  .game-heading p { padding-inline: 8px; }
+  .game-heading { background-position: center, 76% 38%; }
+  .game-heading p { max-width: 28ch; color: #f2e5d1; }
   .patti-stage { min-height: auto; gap: 15px; padding-block: 27px 7px; }
   .patti-felt { inset: 1.5% 3.3% 16%; border-radius: 38% / 32%; transform: perspective(950px) rotateX(12deg); }
   .patti-felt::after { border-radius: inherit; }
