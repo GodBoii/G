@@ -112,35 +112,57 @@
 .wheel-rim {
   inset: 0;
   transform: translateZ(7px);
-  border: 1px solid #e3b471;
-  background: conic-gradient(from 41deg, #f2d497, #775131 11%, #dfb372 23%, #5e3624 36%, #cfa367 54%, #61442a 70%, #9b6a38 80%, #f0d095);
-  box-shadow: inset 0 0 0 2px #f9e2b340, inset 0 0 0 7px #482b1f40, 0 4px 0 #744523;
+  border: 1px solid #d1a675;
+  background:
+    repeating-radial-gradient(ellipse at 48% 51%, transparent 0 1px, #2d130d45 2px, transparent 4px),
+    conic-gradient(from 24deg, #301711, #a36a3c 15%, #4b2114 33%, #874324 53%, #331810 71%, #ae7648 87%, #301711);
+  box-shadow: inset 0 2px 3px #ffce996e, inset 0 -3px 4px #23150e, 0 4px 0 #4a2c20;
 }
 .wheel-track {
-  inset: 3.5%;
-  transform: translateZ(9px);
-  border: 1px solid #f2c28493;
+  inset: 4%;
+  transform: translateZ(8px);
+  border: 2px solid #ba975e;
   background:
-    radial-gradient(circle, #21140e 60%, #7d5938 76%, #41261a 80%, #a17244 87%, #241b15 92%);
-  box-shadow: inset 0 0 0 3px #eec28a3a, inset 0 0 0 5px #211912;
+    radial-gradient(closest-side, transparent 71%, #311e14 75%, #ab8057 85%, #674630 90%, #302317 95%, #c39a6e 98%, #453221),
+    #513321;
+  box-shadow: 0 0 0 2px #44271b, inset 0 0 5px #241811;
+}
+.track-deflector { position: absolute; inset: 0; }
+.track-deflector::before {
+  content: "";
+  position: absolute;
+  top: 6%; left: 49.3%; width: 1.4%; height: 3.6%;
+  background: linear-gradient(90deg, #604733, #fff4cb 43%, #a28864 55%, #483523);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .wheel-rotor {
-  inset: 8%;
+  inset: 14%;
+  transform-style: preserve-3d;
   transform: translateZ(11px) rotateZ(var(--wheel-rotation));
-  border: 1px solid #e2be83;
+  border: 1px solid #dfc89c;
   background: var(--pockets);
-  box-shadow: 0 0 0 2px #251915, inset 0 0 0 2px #e8b78270, inset 0 0 24px #160f0dbd;
+  box-shadow: 0 0 0 2px #34241b, inset 0 0 4px #24170e;
 }
-.wheel-pocket { position: absolute; inset: 0; color: #ffedcc; text-align: center; font: 700 clamp(.58rem, 1.21vw, .85rem)/1 var(--utility); }
-.wheel-pocket span { position: absolute; top: 8.5%; left: 50%; translate: -50% 0; }
-.wheel-dish {
-  inset: 27%;
-  transform: translateZ(14px);
-  border: 2px solid #dcb77e;
+.wheel-rotor::before {
+  content: "";
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  border: 1px solid #f1d7a2;
   background:
-    repeating-radial-gradient(circle at 50% 50%, #57352015 0 1px, #d6a26620 1px 3px),
-    conic-gradient(from 25deg, #f1c989, #624323 13%, #a6723e 32%, #271d15 44%, #e2b379 58%, #6d4b30 77%, #b28b57 93%, #f1c989);
-  box-shadow: 0 0 0 3px #241c13, 0 0 0 4px #d7a974, inset 0 0 25px #23150cbf;
+    repeating-conic-gradient(from -4.864865deg, #f4d9aa 0 .65deg, #624c37 .65deg 1.4deg, transparent 1.4deg 9.72973deg),
+    radial-gradient(closest-side, #473423 65%, #201b17 76%, #3b3028 95%, #77624d);
+}
+.wheel-pocket { position: absolute; inset: 0; color: #fff6de; text-align: center; font: 700 clamp(.57rem,1.12vw,.86rem)/1 var(--utility); }
+.wheel-pocket span { position: absolute; top: 3%; left: 50%; translate: -50% 0; }
+.wheel-dish {
+  inset: 22%;
+  transform: translateZ(2px);
+  border: 2px solid #d6ae77;
+  background:
+    repeating-radial-gradient(ellipse at 48% 51%, transparent 0 2px, #4e27163d 3px, transparent 4px),
+    conic-gradient(from 30deg, #704028, #b57d50 18%, #653a25 36%, #42291c 50%, #a26540 67%, #bc8556 76%, #704028);
+  box-shadow: inset 0 1px 4px #ffdfb3a8, 0 0 0 1px #442c21;
 }
 .wheel-spindle {
   inset: 40%;
@@ -172,13 +194,6 @@
   box-shadow: 0 3px 2px #392512a3;
 }
 .spindle-stem::after { rotate: 90deg; }
-.roulette-wheel[data-spinning="true"] .spindle-stem {
-  animation: spindle-turn var(--spin-time) var(--ease-spin);
-}
-@keyframes spindle-turn {
-  from { transform: translateZ(17px) rotate(-720deg); }
-  to { transform: translateZ(17px) rotate(0); }
-}
 .spindle-knob {
   inset: 24%;
   transform: translateZ(24px);
@@ -187,37 +202,32 @@
   box-shadow: 0 4px 1px #522d16;
   font: clamp(.77rem, 2.1vw, 1.35rem)/1 Georgia, serif;
 }
-.ball-orbit { inset: 0; transform: translateZ(19px) rotateZ(var(--ball-rotation)); pointer-events: none; }
+.ball-orbit { inset: 0; transform: translateZ(3px) rotateZ(var(--ball-rotation)); pointer-events: none; }
 .ball-orbit[data-visible="false"] { visibility: hidden; }
 .wheel-ball {
   position: absolute;
-  top: 20.1%;
-  left: 50%;
-  translate: -50% 0;
-  width: 4.25%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 33% 23%, #fffdf0, #f7deaa 42%, #9f7752 78%);
-  box-shadow: 0 2px 4px #231310c9;
+  top: 15%; left: 50%; translate: -50% 0;
+  width: 4.6%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, white, #fff4da 35%, #dabf96 70%, #85765e);
+  box-shadow: 0 1px 3px #160e0abf;
 }
-.wheel-pointer {
-  position: absolute;
-  left: 50%;
-  top: 2.6%;
-  width: 6%;
-  aspect-ratio: 1;
-  transform: translate3d(-50%, 0, 23px);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  background: linear-gradient(120deg, #fff0c6, #b6864e);
+.roulette-wheel[data-spinning="true"] .wheel-rotor {
+  transition: transform var(--spin-time) cubic-bezier(.333,.58,.667,1);
 }
-.roulette-wheel[data-spinning="true"] :is(.wheel-rotor, .ball-orbit) {
-  transition: transform var(--spin-time) var(--ease-spin);
+.roulette-wheel[data-spinning="true"] .ball-orbit {
+  transition: transform calc(var(--spin-time) * .82) cubic-bezier(.333,.57,.667,1);
 }
-.roulette-wheel[data-spinning="true"] .ball-orbit { transition-timing-function: cubic-bezier(.07, .58, .22, 1); }
-.roulette-wheel[data-spinning="true"] .wheel-ball { animation: ball-drop var(--spin-time) var(--ease-spin) both; }
+.roulette-wheel[data-spinning="true"] .wheel-ball { animation: ball-drop var(--spin-time) linear both; }
+/* Distances are ball diameters. The outer rail sits about six diameters outside the pockets. */
 @keyframes ball-drop {
-  from, 38% { transform: translateY(-228%); }
-  75% { transform: translateY(-126%); }
-  88% { transform: translateY(13%); }
-  to { transform: translateY(0); }
+  0%, 46% { transform: translate3d(0,-625%,2px); }
+  55% { transform: translate3d(0,-580%,1px); }
+  62% { transform: translate3d(0,-395%,0); }
+  65% { transform: translate3d(38%,-365%,5px); }
+  70% { transform: translate3d(-14%,-165%,0); }
+  73% { transform: translate3d(-38%,-115%,3px); }
+  77% { transform: translate3d(30%,12%,0); }
+  80% { transform: translate3d(-17%,-22%,1px); }
+  83% { transform: translate3d(8%,4%,0); }
+  86%, 100% { transform: none; }
 }
