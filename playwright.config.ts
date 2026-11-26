@@ -5,7 +5,7 @@ export default defineConfig({
   outputDir: "test-results",
   use: { baseURL: "http://localhost:3100" },
   webServer: {
-    command: "npm run start -- -p 3100",
+    command: "node node_modules/next/dist/bin/next start -p 3100",
     url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 120000,
