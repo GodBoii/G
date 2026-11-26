@@ -95,9 +95,9 @@ export function weightedIndex(weights: readonly number[], rng: Rng = cryptoRng):
   throw new RangeError("weightedIndex: unreachable");
 }
 
-/** Error banner text for a failed play handler (§9). */
+/** Error text for a failed round. */
 export function playErrorMessage(e: unknown): string {
   return e instanceof Error && e.message === RNG_UNAVAILABLE
     ? "Secure random numbers are unavailable in this browser"
-    : "Something went wrong. Your bet was not placed.";
+    : "The round could not start. Try again.";
 }
