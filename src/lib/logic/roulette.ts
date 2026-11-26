@@ -68,7 +68,9 @@ export function spinRoulette(rng?: Rng) {
 
 export const POCKET_ANGLE = 360 / WHEEL_ORDER.length;
 
-export function nextWheelRotation(previous: number, pocket: number): number {
-  const offset = (360 - pocket * POCKET_ANGLE - (previous % 360) + 360) % 360;
-  return previous + 5 * 360 + offset;
+/** Ball angle in the rotating pocket ring's local coordinate system. */
+export function nextBallRotation(previous: number, pocketIndex: number): number {
+  const target = pocketIndex * POCKET_ANGLE;
+  const counterclockwiseOffset = ((previous - target) % 360 + 360) % 360;
+  return previous - 6 * 360 - counterclockwiseOffset;
 }
