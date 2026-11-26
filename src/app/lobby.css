@@ -1,0 +1,237 @@
+.lobby {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: center;
+  min-height: 100dvh;
+  overflow: clip;
+  padding: clamp(38px, 5vw, 70px) 24px 56px;
+  background: #101411;
+}
+
+.salon-backdrop, .salon-backdrop::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+}
+.salon-backdrop img { object-fit: cover; object-position: center 29%; }
+.salon-backdrop::after {
+  content: "";
+  z-index: 0;
+  background: linear-gradient(0deg, #090d0be8, #10151149 52%, #06110d4f 100%),
+    radial-gradient(ellipse at 50% 17%, #1318100c 14%, #070a089d 81%);
+}
+.lobby-inner { width: min(1180px, 100%); margin-inline: auto; }
+.lobby-intro { position: relative; margin: 0 auto clamp(23px, 3.15vw, 47px); text-align: center; }
+.lobby-intro h1 {
+  margin: 8px 0 8px;
+  font: 400 clamp(5.2rem, 11.4vw, 10rem)/.89 var(--display);
+  letter-spacing: -.088em;
+  color: #f6e6c6;
+  text-shadow: 0 6px 26px #080905d9;
+  animation: enter-room var(--enter-time) var(--ease-enter) both;
+}
+.lobby-intro h1 em {
+  color: #e3bf80;
+  font-style: normal;
+}
+.lobby-intro .club-mark { width: 21px; height: 21px; font-size: 1rem; }
+.lobby-intro p {
+  color: #eee1c7;
+  font-size: clamp(.78rem, 1.35vw, .95rem);
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  animation: enter-room var(--enter-time) 80ms var(--ease-enter) both;
+}
+.lobby-tables { display: grid; grid-template-columns: 1.04fr 1fr; gap: clamp(13px, 2vw, 25px); }
+
+.table-entrance {
+  position: relative;
+  display: block;
+  min-width: 0;
+  perspective: 1250px;
+  border-radius: 21px;
+  animation: enter-room 650ms 90ms var(--ease-enter) both;
+  --scene-core: #366853;
+  --scene-base: #142a23;
+  --scene-edge: #0784550f;
+}
+.table-entrance[data-theme="roulette"] {
+  --scene-core: #7c4337;
+  --scene-base: #37221c;
+  --scene-edge: #a2582d13;
+  animation-delay: 170ms;
+}
+.table-entrance-surface {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: end;
+  min-height: clamp(330px, 39vw, 515px);
+  border-radius: inherit;
+  border: 1px solid #b3935d8c;
+  background:
+    radial-gradient(ellipse at 49% 34%, var(--scene-core), transparent 65%),
+    linear-gradient(155deg, var(--scene-base), #101714 85%);
+  box-shadow: 0 14px 35px #060805c9, inset 0 1px #f8d0943b, inset 0 0 75px 20px var(--scene-edge);
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 520ms var(--ease-enter), border-color 180ms var(--ease-enter);
+}
+.table-entrance:hover .table-entrance-surface { border-color: #e4bb7d; transition-duration: 175ms; }
+.table-entrance-surface::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid #cfaf7439;
+  border-radius: 14px;
+  pointer-events: none;
+}
+.entrance-scene {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 55px;
+  overflow: clip;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  perspective: 1100px;
+  background: repeating-linear-gradient(118deg, #fff1c005 0 1px, transparent 1px 7px);
+}
+.entrance-scene::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: min(70%, 420px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: .62;
+  background:
+    radial-gradient(circle closest-side, transparent 65%, #e9cc9038 65.3% 65.6%, transparent 66% 80%,
+      #f2d79d42 80.4% 80.7%, transparent 81% 92%, #e4bd7f31 92.4% 92.8%, transparent 93%),
+    repeating-conic-gradient(from 3deg, #eccf951f 0 .55deg, transparent .65deg 15deg);
+  mask-image: radial-gradient(circle closest-side, transparent 48%, #000 68%, #000 93%, transparent 100%);
+}
+.entrance-scene::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  bottom: 5%;
+  left: 14%;
+  right: 14%;
+  height: 22%;
+  border: 1px solid #ebcf884a;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #040806c7 8%, #0b10078b 48%, #c89e6620 72%, transparent 76%);
+  box-shadow: 0 19px 34px #07110859;
+}
+.entrance-glare {
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 36%), #fff3ba25, transparent 42%);
+  mix-blend-mode: screen;
+  transition: opacity 220ms;
+}
+.entrance-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: clamp(15px, 2.4vw, 30px);
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(0deg, #0b120ee8, #101513c9 50%, #0f150e00);
+}
+.entrance-title { display: block; font: 400 clamp(2.75rem, 5.3vw, 5rem)/.96 var(--display); letter-spacing: -.067em; }
+.entrance-subtitle { display: block; margin-top: 7px; font-size: clamp(.82rem, 1.15vw, 1rem); color: #e4d4ba; }
+.entrance-arrow {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: clamp(48px, 5.6vw, 67px);
+  aspect-ratio: 1;
+  border: 1px solid #e6c184ba;
+  border-radius: 50%;
+  color: #fbdfad;
+  background: #241e15bf;
+  font: 400 1.65rem/1 var(--utility);
+  transition: background-color 210ms, color 210ms, transform 210ms var(--ease-enter);
+}
+.table-entrance:hover .entrance-arrow, .table-entrance:focus-visible .entrance-arrow {
+  color: #221a0f;
+  background: #f2d39c;
+  transform: translate(2px, -2px);
+}
+
+.lobby-card-fan {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: fan-hover 6s ease-in-out infinite;
+}
+.fan-card {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: clamp(103px, 15vw, 207px);
+  transform-origin: 50% 75%;
+  transform: translate3d(calc(-50% + var(--fan-x)), -50%, var(--fan-z)) rotateZ(var(--fan-angle)) rotateY(var(--fan-y));
+  animation: fan-open 720ms 180ms var(--ease-enter) both;
+}
+.fan-card:nth-child(1) { --fan-x: -33%; --fan-z: -22px; --fan-angle: -26deg; --fan-y: -14deg; }
+.fan-card:nth-child(2) { --fan-x: 0%; --fan-z: 42px; --fan-angle: -4deg; --fan-y: -6deg; z-index: 1; animation-delay: 230ms; }
+.fan-card:nth-child(3) { --fan-x: 33%; --fan-z: -6px; --fan-angle: 23deg; --fan-y: 13deg; animation-delay: 290ms; }
+.lobby-wheel {
+  display: grid;
+  width: min(75%, 399px);
+  place-items: center;
+  transform: translateY(-2%);
+  animation: wheel-showcase 7s .25s ease-in-out infinite;
+  --wheel-pitch: 39deg;
+  --wheel-yaw: -14deg;
+}
+.lobby-wheel .roulette-wheel { width: 100%; }
+.lobby-wheel .wheel-pocket { font-size: clamp(.58rem, 1.22vw, .87rem); }
+.lobby-wheel .wheel-rotor { animation: preview-rotor 24s linear infinite; }
+
+.table-entrance:not([data-in-view="true"]) :is(.lobby-card-fan, .lobby-wheel, .wheel-rotor) { animation-play-state: paused; }
+@keyframes fan-open {
+  from { transform: translate3d(-50%, -37%, -55px) rotateZ(-7deg) rotateY(-65deg) scale(.72); opacity: .22; }
+}
+@keyframes fan-hover {
+  0%, 100% { transform: translateY(1px) rotateY(-5deg) rotateX(2deg); }
+  50% { transform: translateY(-13px) rotateY(7deg) rotateX(-5deg); }
+}
+@keyframes wheel-showcase {
+  0%, 100% { transform: translateY(-2%) rotate(-3deg); }
+  50% { transform: translateY(-7%) rotate(3deg); }
+}
+@keyframes preview-rotor {
+  to { transform: translateZ(11px) rotateZ(calc(var(--wheel-rotation) + 360deg)); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .table-entrance:hover .entrance-glare { opacity: 1; }
+}
+@media (max-width: 760px) {
+  .lobby { padding: 39px 13px 33px; }
+  .lobby-tables { grid-template-columns: minmax(0, 1fr); }
+  .lobby-inner { max-width: 500px; }
+  .lobby-intro { margin-bottom: 26px; }
+  .lobby-intro h1 { font-size: clamp(4.35rem, 15vw, 6.5rem); }
+  .salon-backdrop img { object-position: center top; }
+  .table-entrance-surface { min-height: clamp(311px, 76vw, 389px); }
+  .entrance-scene { inset-block-end: 43px; }
+  .fan-card { width: clamp(113px, 34vw, 152px); }
+  .lobby-wheel { width: min(72%, 310px); }
+  .lobby-wheel .wheel-pocket { font-size: .62rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lobby-card-fan, .lobby-wheel, .fan-card, .lobby-wheel .wheel-rotor { animation: none; }
+  .table-entrance-surface { transform: none; }
+  .entrance-glare { display: none; }
+}
