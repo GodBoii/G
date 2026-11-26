@@ -143,7 +143,7 @@ describe("playErrorMessage", () => {
   });
 
   it("maps everything else to the generic text", () => {
-    const generic = "Something went wrong. Your bet was not placed.";
+    const generic = "The round could not start. Try again.";
     expect(playErrorMessage(new RangeError("bad"))).toBe(generic);
     expect(playErrorMessage(new Error("x"))).toBe(generic);
     expect(playErrorMessage("oops")).toBe(generic);
