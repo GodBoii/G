@@ -181,6 +181,7 @@
   background: linear-gradient(135deg, #35241e, #1f1c17 65%);
 }
 .roulette-stage {
+  overflow: clip;
   position: relative;
   isolation: isolate;
   display: grid;
@@ -351,9 +352,9 @@
   .table-notes { grid-template-columns: 1fr; gap: 9px; }
   .table-rules summary { min-height: 44px; }
 
-  .roulette-stage .roulette-wheel { width: min(84%, 344px); margin-bottom: -15px; }
+  .roulette-stage .roulette-wheel { width: min(100%, 370px); margin-bottom: -15px; }
   .roulette-stage { padding-bottom: 8px; }
-  .roulette-console { padding: 13px 8px; }
+  .roulette-console { padding: 16px 8px; }
   .inside-picks { grid-template-columns: 1fr; }
   .number-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .number-grid .pick-cell { grid-row: auto; grid-column: auto; }
@@ -369,4 +370,20 @@
     box-shadow: 0 -5px 24px #100e0ca3;
   }
   .roulette-room { animation: none; }
+}
+
+@media (max-width: 350px) {
+  .number-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .roulette-actions { gap: 5px; }
+  .roulette-actions .primary { min-width: 116px; }
+  .patti-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .patti-actions .primary { grid-column: 1 / -1; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
+  .game-heading { margin-bottom: 14px; padding-block: 44px 12px; }
+  .game-heading h1 { font-size: 2.8rem; }
+  .roulette-stage .roulette-wheel { width: min(64svh, 330px); }
+  .roulette-stage { scroll-margin-top: 0; }
+  .roulette-stage .spin-status { min-height: 40px; }
 }
