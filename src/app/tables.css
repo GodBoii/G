@@ -52,6 +52,20 @@
 }
 .back-link span { transition: transform 190ms var(--ease-enter); }
 .back-link:hover span { transform: translateX(-3px); }
+.sound-toggle {
+  position: absolute;
+  inset: 4px clamp(20px, 3.4vw, 54px) auto auto;
+  min-height: 44px;
+  padding-inline: 12px;
+  border: 1px solid #9c8055;
+  border-radius: 5px;
+  background: #171a17;
+  color: var(--ink);
+  font-size: .87rem;
+}
+.sound-toggle[aria-pressed="true"] { border-color: var(--brass); color: #ffe0a7; }
+.sound-toggle:hover { background: #352d21; }
+.sound-toggle:focus-visible { outline-offset: 2px; }
 
 .table-room {
   position: relative;
@@ -381,7 +395,7 @@
 }
 
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
-  .game-heading { margin-bottom: 14px; padding-block: 44px 12px; }
+  .game-heading { margin-bottom: 14px; padding-block: 53px 12px; }
   .game-heading h1 { font-size: 2.8rem; }
   .roulette-stage .roulette-wheel { width: min(64svh, 330px); }
   .roulette-stage { scroll-margin-top: 0; }
