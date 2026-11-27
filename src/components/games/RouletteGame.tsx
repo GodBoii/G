@@ -53,12 +53,12 @@ export function RouletteGame() {
         const matched = picks.filter((pick) => matchesPocket(pick, result.number));
         history.add({ id, number: result.number, matched, pickCount: picks.length });
         unlock();
-        sound.play("land");
-        if (matched.length > 0) sound.play("win", 0.12);
+        if (reducedMotion) sound.play("land");
+        if (matched.length > 0) sound.play("match", reducedMotion ? 0.15 : 0);
       }
       if (reducedMotion) finish();
       else {
-        sound.play({ rollSeconds: SPIN_DURATION / 1000 });
+        sound.play({ kind: "roll", seconds: SPIN_DURATION / 1000 });
         timers.setTimeout(finish, SPIN_DURATION);
       }
     } catch (failure) {
