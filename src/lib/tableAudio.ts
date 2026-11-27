@@ -1,133 +1,133 @@
 export type TableCue =
-  | "enabled" | "deal" | "quickDeal" | "reveal" | "fold"
-  | "chipOn" | "chipOff" | "clear" | "land" | "win" | "loss" | "tie"
-  | { rollSeconds: number };
+  | "enabled" | "deal" | "quickDeal" | "fold"
+  | "chipOn" | "chipOff" | "clear" | "land" | "win" | "loss" | "tie" | "match"
+  | { kind: "reveal"; hands: 1 | 2; instant: boolean }
+  | { kind: "roll"; seconds: number };
 
-const silence = 0.0001;
+// Offsets and lengths in seconds within public/table-sounds.mp3.
+const clips = {
+  dealNear: { offset: 0, length: 0.115 },
+  dealFar: { offset: 0.25, length: 0.11 },
+  flip: { offset: 0.5, length: 0.16 },
+  gather: { offset: 0.75, length: 0.30 },
+  chipOn: { offset: 1.15, length: 0.10 },
+  chipOff: { offset: 1.35, length: 0.14 },
+  clear: { offset: 1.60, length: 0.32 },
+  land: { offset: 2.02, length: 0.18 },
+  piano: { offset: 2.30, length: 0.94 },
+  wheel: { offset: 3.40, length: 4.30 },
+};
+
+let samples: Promise<AudioBuffer | null> | undefined;
+
+export function preloadTableSounds() {
+  samples ??= fetch("/table-sounds.mp3")
+    .then((response) => {
+      if (!response.ok) throw new Error(`Table sound download returned ${response.status}`);
+      return response.arrayBuffer();
+    })
+    .then((bytes) => new OfflineAudioContext(1, 1, 32000).decodeAudioData(bytes))
+    .catch(() => {
+      // Leave audio optional and allow the next interaction to retry loading.
+      samples = undefined;
+      return null;
+    });
+  return samples;
+}
 
 export function createTableAudio() {
   const context = new AudioContext();
   const master = context.createGain();
-  master.gain.value = 0.28;
+  master.gain.value = 0.58;
   master.connect(context.destination);
-
-  const noise = context.createBuffer(1, Math.ceil(context.sampleRate * 0.18), context.sampleRate);
-  const samples = noise.getChannelData(0);
-  for (let index = 0; index < samples.length; index++) {
-    samples[index] = Math.random() * 2 - 1;
-  }
-
-  function strike(source: AudioScheduledSourceNode, at: number, length: number, level: number, input: AudioNode = source) {
-    const envelope = context.createGain();
-    envelope.gain.setValueAtTime(silence, at);
-    envelope.gain.exponentialRampToValueAtTime(level, at + Math.min(0.008, length / 4));
-    envelope.gain.exponentialRampToValueAtTime(silence, at + length);
-    input.connect(envelope).connect(master);
-    source.start(at);
-    source.stop(at + length);
-  }
-
-  function tone(at: number, length: number, from: number, to: number, level: number, shape: OscillatorType = "sine") {
-    const oscillator = context.createOscillator();
-    oscillator.type = shape;
-    oscillator.frequency.setValueAtTime(from, at);
-    oscillator.frequency.exponentialRampToValueAtTime(to, at + length);
-    strike(oscillator, at, length, level);
-  }
-
-  function brush(at: number, length: number, from: number, to: number, level: number) {
-    const source = context.createBufferSource();
-    source.buffer = noise;
-    const filter = context.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(from, at);
-    filter.frequency.exponentialRampToValueAtTime(to, at + length);
-    source.connect(filter);
-    strike(source, at, length, level, filter);
-  }
-
-  function chip(at: number, pitch: number, level = 0.17) {
-    tone(at, 0.056, pitch, pitch * 0.84, level, "triangle");
-    brush(at, 0.024, pitch * 2.6, pitch * 1.7, level * 0.65);
-  }
-
-  function chime(at: number, notes: readonly number[]) {
-    notes.forEach((pitch, index) => {
-      const start = at + index * 0.095;
-      tone(start, 0.38, pitch, pitch, 0.19);
-      tone(start, 0.15, pitch * 2, pitch * 2, 0.038);
-    });
-  }
+  let stopped = false;
 
   function play(cue: TableCue, delay = 0) {
     if (context.state !== "running") void context.resume().catch(() => {});
     const at = context.currentTime + 0.012 + delay;
+    void preloadTableSounds().then((buffer) => {
+      if (stopped || !buffer) return;
 
-    if (typeof cue === "object") {
-      // The ball moves quickly at first and hits the pocket dividers less often as it slows.
-      const { rollSeconds } = cue;
-      for (let elapsed = 0.035; elapsed < rollSeconds - 0.09;) {
-        const progress = elapsed / rollSeconds;
-        const pitch = 1390 - progress * 640 + Math.sin(elapsed * 41) * 160;
-        chip(at + elapsed, pitch, 0.075 + progress * 0.06);
-        elapsed += 0.053 + 0.28 * progress ** 2;
+      function hit(name: keyof typeof clips, offset = 0, level = 1, rate = 1) {
+        const clip = clips[name];
+        const time = at + offset;
+        // Skip elapsed audio when the first interaction beats the asset download.
+        const skip = Math.max(0, context.currentTime - time) * rate;
+        if (skip >= clip.length) return;
+
+        const source = context.createBufferSource();
+        const gain = context.createGain();
+        source.buffer = buffer;
+        source.playbackRate.value = rate;
+        gain.gain.value = level;
+        source.connect(gain).connect(master);
+        source.start(Math.max(time, context.currentTime), clip.offset + skip, clip.length - skip);
       }
-      return;
-    }
 
-    switch (cue) {
-      case "deal":
-      case "quickDeal": {
-        const spacing = cue === "deal" ? 0.075 : 0.024;
-        for (let index = 0; index < 3; index++) {
-          const start = at + index * spacing;
-          brush(start, 0.1, 2900 - index * 310, 540, 0.31);
-          tone(start + 0.032, 0.08, 205 - index * 19, 97, 0.12);
+      function notes(semitones: readonly number[], spacing: number, level: number) {
+        semitones.forEach((note, index) => {
+          hit("piano", index * spacing, level * (1 - index * 0.07), 2 ** (note / 12));
+        });
+      }
+
+      if (typeof cue === "object") {
+        if (cue.kind === "roll") {
+          hit("wheel", 0, 0.94, clips.wheel.length / cue.seconds);
+        } else {
+          const firstFlip = cue.instant ? 0 : 0.16;
+          const spacing = cue.instant ? 0.027 : 0.075;
+          for (let index = 0; index < 3; index++) {
+            const start = firstFlip + index * spacing;
+            hit("flip", start, 0.74, 1 + index * 0.04);
+            if (cue.hands === 2) hit("flip", start + 0.016, 0.5, 0.90 + index * 0.04);
+          }
         }
-        break;
+        return;
       }
-      case "reveal":
-        brush(at, 0.135, 720, 3000, 0.34);
-        brush(at + 0.081, 0.06, 2300, 650, 0.25);
-        break;
-      case "fold":
-        brush(at, 0.16, 2050, 400, 0.33);
-        tone(at + 0.055, 0.13, 175, 72, 0.17);
-        break;
-      case "chipOn":
-        chip(at, 1150);
-        chip(at + 0.032, 780, 0.08);
-        break;
-      case "chipOff":
-        chip(at, 640, 0.13);
-        break;
-      case "clear":
-        brush(at, 0.13, 1350, 530, 0.26);
-        chip(at + 0.035, 920, 0.10);
-        chip(at + 0.070, 630, 0.10);
-        break;
-      case "land":
-        chip(at, 920, 0.21);
-        tone(at + 0.02, 0.14, 310, 126, 0.17);
-        break;
-      case "enabled":
-        chime(at, [523.25, 659.25]);
-        break;
-      case "win":
-        chime(at, [523.25, 659.25, 783.99, 1046.5]);
-        break;
-      case "loss":
-        chime(at, [329.63, 246.94]);
-        break;
-      case "tie":
-        chime(at, [392, 523.25]);
-        break;
-    }
+
+      switch (cue) {
+        case "deal":
+        case "quickDeal": {
+          const spacing = cue === "deal" ? 0.075 : 0.026;
+          for (let index = 0; index < 3; index++) {
+            const start = index * spacing;
+            hit("dealFar", start, 0.61, 0.92 + index * 0.05);
+            hit("dealNear", start + 0.017, 0.82, 1.06 - index * 0.04);
+          }
+          break;
+        }
+        case "fold":
+          hit("gather", 0, 0.81);
+          break;
+        case "chipOn":
+        case "chipOff":
+        case "clear":
+        case "land":
+          hit(cue, 0, 0.83);
+          break;
+        case "enabled":
+          notes([7], 0, 0.52);
+          break;
+        case "win":
+          notes([0, 4, 7, 12], 0.115, 0.88);
+          break;
+        case "loss":
+          notes([3, 0, -5], 0.16, 0.64);
+          break;
+        case "tie":
+          notes([0, 7], 0.14, 0.60);
+          break;
+        case "match":
+          notes([7, 12], 0.12, 0.74);
+          break;
+      }
+    });
   }
 
   return {
     play,
     stop() {
+      stopped = true;
       master.disconnect();
       void context.close().catch(() => {});
     },
