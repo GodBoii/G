@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useHistory } from "@/hooks/useHistory";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useRoundLock } from "@/hooks/useRoundLock";
+import { useTableAudio } from "@/hooks/useTableAudio";
 import { useTimers } from "@/hooks/useTimers";
 import { compareHands, dealHands, HAND_RANKS, handName } from "@/lib/logic/teenPatti";
 import { playErrorMessage } from "@/lib/rng";
@@ -47,6 +48,7 @@ function HandDisplay({ label, hand, reveal, dealing }: {
 export function TeenPattiGame() {
   const { tryLock, unlock, busy } = useRoundLock();
   const timers = useTimers();
+  const sound = useTableAudio();
   const reducedMotion = useReducedMotion();
   const history = useHistory<{ id: number; result: Result; hand: string }>();
   const [stage, setStage] = useState<Stage>({ kind: "ready" });
@@ -66,6 +68,7 @@ export function TeenPattiGame() {
     setError("");
     try {
       const next = { ...dealHands(), id: (round?.id ?? 0) + 1, seen: false };
+      sound.play(reducedMotion ? "quickDeal" : "deal");
       function finishDeal() {
         setStage({ kind: "playing", round: next });
         unlock();
@@ -87,10 +90,13 @@ export function TeenPattiGame() {
     const comparison = compareHands(round.player, round.dealer);
     const outcome = fold ? "fold" : comparison > 0 ? "win" : comparison < 0 ? "loss" : "tie";
 
+    if (!fold) sound.play("reveal");
+
     function complete() {
       setStage({ kind: "finished", round, result: outcome });
       history.add({ id: round.id, result: outcome, hand: fold && !round.seen ? "Blind fold" : handName(round.player) });
       unlock();
+      sound.play(outcome, reducedMotion && !fold ? 0.16 : 0);
     }
     if (fold || reducedMotion) complete();
     else {
@@ -105,7 +111,8 @@ export function TeenPattiGame() {
 
   return (
     <div className="game-room" data-theme="patti">
-      <TableHeading title="Teen Patti" description="Three cards each. The strongest hand wins." />
+      <TableHeading title="Teen Patti" description="Three cards each. The strongest hand wins."
+        soundEnabled={sound.enabled} onToggleSound={sound.toggle} />
       <div className="table-room patti-room">
         <div className="patti-stage">
           <div className="patti-felt" aria-hidden="true"><span>♠</span></div>
@@ -125,7 +132,9 @@ export function TeenPattiGame() {
           </button>
           <button className="secondary" type="button" disabled={!playing || round?.seen}
             onClick={() => {
-              if (stage.kind === "playing") setStage({ kind: "playing", round: { ...stage.round, seen: true } });
+              if (stage.kind !== "playing" || stage.round.seen) return;
+              setStage({ kind: "playing", round: { ...stage.round, seen: true } });
+              sound.play("reveal");
             }}>See cards</button>
           <button className="secondary" type="button" disabled={!playing} onClick={() => finish(true)}>Fold</button>
         </div>
