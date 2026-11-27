@@ -4,6 +4,7 @@ import { useRef, useState, type CSSProperties } from "react";
 import { useHistory } from "@/hooks/useHistory";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useRoundLock } from "@/hooks/useRoundLock";
+import { useTableAudio } from "@/hooks/useTableAudio";
 import { useTimers } from "@/hooks/useTimers";
 import { COLUMNS, DOZENS, OUTSIDE_PICKS, matchesPocket, nextBallRotation, pickLabel, pocketColor, spinRoulette,
   type Pick } from "@/lib/logic/roulette";
@@ -17,6 +18,7 @@ type SpinResult = { id: number; number: number; matched: readonly Pick[]; pickCo
 export function RouletteGame() {
   const { tryLock, unlock, busy } = useRoundLock();
   const timers = useTimers();
+  const sound = useTableAudio();
   const reducedMotion = useReducedMotion();
   const history = useHistory<SpinResult>();
   const [picks, setPicks] = useState<readonly Pick[]>([]);
@@ -26,8 +28,10 @@ export function RouletteGame() {
   const latest = history.entries[0];
 
   function togglePick(pick: Pick) {
-    setPicks((selected) => selected.includes(pick) ? selected.filter((item) => item !== pick) : [...selected, pick]);
+    const selected = picks.includes(pick);
+    setPicks(selected ? picks.filter((item) => item !== pick) : [...picks, pick]);
     setError("");
+    sound.play(selected ? "chipOff" : "chipOn");
   }
 
   function spin() {
@@ -46,12 +50,17 @@ export function RouletteGame() {
       }
 
       function finish() {
-        history.add({ id, number: result.number, matched: picks.filter((pick) => matchesPocket(pick, result.number)),
-          pickCount: picks.length });
+        const matched = picks.filter((pick) => matchesPocket(pick, result.number));
+        history.add({ id, number: result.number, matched, pickCount: picks.length });
         unlock();
+        sound.play("land");
+        if (matched.length > 0) sound.play("win", 0.12);
       }
       if (reducedMotion) finish();
-      else timers.setTimeout(finish, SPIN_DURATION);
+      else {
+        sound.play({ rollSeconds: SPIN_DURATION / 1000 });
+        timers.setTimeout(finish, SPIN_DURATION);
+      }
     } catch (failure) {
       setError(playErrorMessage(failure));
       unlock();
@@ -81,7 +90,8 @@ export function RouletteGame() {
 
   return (
     <div className="game-room" data-theme="roulette">
-      <TableHeading title="European roulette" description="Call the pocket. Watch where the ball lands." />
+      <TableHeading title="European roulette" description="Call the pocket. Watch where the ball lands."
+        soundEnabled={sound.enabled} onToggleSound={sound.toggle} />
       <div className="table-room roulette-room">
         <div className="roulette-stage" ref={wheelStage}>
           <div className="roulette-light" aria-hidden="true" />
@@ -110,7 +120,11 @@ export function RouletteGame() {
           <div className="roulette-actions">
             <div className="pick-summary">
               <span>{picks.length === 0 ? "No picks" : `${picks.length} ${picks.length === 1 ? "pick" : "picks"}`}</span>
-              <button type="button" className="text-button" disabled={busy || picks.length === 0} onClick={() => setPicks([])}>Clear</button>
+              <button type="button" className="text-button" disabled={busy || picks.length === 0}
+                onClick={() => {
+                  setPicks([]);
+                  sound.play("clear");
+                }}>Clear</button>
             </div>
             <button type="button" className="primary" disabled={busy} onClick={spin}>
               {busy ? "Spinning…" : "Spin wheel"} <span aria-hidden="true">↻</span>
