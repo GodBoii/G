@@ -90,13 +90,13 @@ export function TeenPattiGame() {
     const comparison = compareHands(round.player, round.dealer);
     const outcome = fold ? "fold" : comparison > 0 ? "win" : comparison < 0 ? "loss" : "tie";
 
-    if (!fold) sound.play("reveal");
+    if (!fold) sound.play({ kind: "reveal", hands: round.seen ? 1 : 2, instant: reducedMotion });
 
     function complete() {
       setStage({ kind: "finished", round, result: outcome });
       history.add({ id: round.id, result: outcome, hand: fold && !round.seen ? "Blind fold" : handName(round.player) });
       unlock();
-      sound.play(outcome, reducedMotion && !fold ? 0.16 : 0);
+      sound.play(outcome, reducedMotion && !fold ? 0.23 : 0);
     }
     if (fold || reducedMotion) complete();
     else {
@@ -134,7 +134,7 @@ export function TeenPattiGame() {
             onClick={() => {
               if (stage.kind !== "playing" || stage.round.seen) return;
               setStage({ kind: "playing", round: { ...stage.round, seen: true } });
-              sound.play("reveal");
+              sound.play({ kind: "reveal", hands: 1, instant: reducedMotion });
             }}>See cards</button>
           <button className="secondary" type="button" disabled={!playing} onClick={() => finish(true)}>Fold</button>
         </div>
