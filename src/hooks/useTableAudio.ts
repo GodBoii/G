@@ -1,5 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import { createTableAudio, type TableCue } from "@/lib/tableAudio";
+import { createTableAudio, preloadTableSounds, type TableCue } from "@/lib/tableAudio";
 
 const storageKey = "gamess:table-sound";
 const soundChange = "table-sound-change";
@@ -34,7 +34,10 @@ export function useTableAudio() {
   }, []);
 
   useEffect(() => {
-    if (enabled) return;
+    if (enabled) {
+      if (getEnabled() && typeof window.OfflineAudioContext === "function") void preloadTableSounds();
+      return;
+    }
     audio.current?.stop();
     audio.current = null;
   }, [enabled]);
